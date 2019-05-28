@@ -17,9 +17,9 @@
 	</developers>
 	<scm>
 		<tag>master</tag>
-		<connection>https://github.com/linuxprobe-org/luava.git</connection>
+		<connection>https://github.com/linuxprobe-org/luava-json.git</connection>
 		<developerConnection>https://github.com/linuxprobe-org</developerConnection>
-		<url>https://github.com/linuxprobe-org/luava.git</url>
+		<url>https://github.com/linuxprobe-org/luava-json.git</url>
 	</scm>
 
 	<distributionManagement>
@@ -41,7 +41,7 @@
 	<packaging>jar</packaging>
 	<name>luava-json</name>
 	<description>luava-json</description>
-	<url>https://github.com/linuxprobe-org/mybatis-universal-crud.git</url>
+	<url>https://github.com/linuxprobe-org/luava-json.git</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
