@@ -37,7 +37,7 @@
 
 	<groupId>org.linuxprobe</groupId>
 	<artifactId>luava-json</artifactId>
-	<version>0.0.1.RELEASE</version>
+	<version>0.0.2.RELEASE</version>
 	<packaging>jar</packaging>
 	<name>luava-json</name>
 	<description>luava-json</description>

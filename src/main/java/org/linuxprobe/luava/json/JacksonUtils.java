@@ -1,11 +1,12 @@
 package org.linuxprobe.luava.json;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
@@ -39,8 +40,12 @@ public class JacksonUtils {
 			return (String) obj;
 		}
 		try {
+			if (obj instanceof InputStream) {
+				Map<?, ?> map = defaultObjectMapper.readValue((InputStream) obj, Map.class);
+				obj = map;
+			}
 			return defaultObjectMapper.writeValueAsString(obj);
-		} catch (JsonProcessingException e) {
+		} catch (IOException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -57,8 +62,12 @@ public class JacksonUtils {
 		}
 		ObjectMapper objectMapper = new ObjectMapper(jf, sp, dc);
 		try {
+			if (obj instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) obj, Map.class);
+				obj = map;
+			}
 			return objectMapper.writeValueAsString(obj);
-		} catch (JsonProcessingException e) {
+		} catch (IOException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -74,8 +83,12 @@ public class JacksonUtils {
 		}
 		ObjectMapper objectMapper = new ObjectMapper(jf);
 		try {
+			if (obj instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) obj, Map.class);
+				obj = map;
+			}
 			return objectMapper.writeValueAsString(obj);
-		} catch (JsonProcessingException e) {
+		} catch (IOException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -94,8 +107,12 @@ public class JacksonUtils {
 		initUniversalConfig(objectMapper);
 		objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
 		try {
+			if (obj instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) obj, Map.class);
+				obj = map;
+			}
 			return objectMapper.writeValueAsString(obj);
-		} catch (JsonProcessingException e) {
+		} catch (IOException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -110,8 +127,12 @@ public class JacksonUtils {
 			return (String) obj;
 		}
 		try {
+			if (obj instanceof InputStream) {
+				Map<?, ?> map = defaultSnameCaseObjectMapper.readValue((InputStream) obj, Map.class);
+				obj = map;
+			}
 			return defaultSnameCaseObjectMapper.writeValueAsString(obj);
-		} catch (JsonProcessingException e) {
+		} catch (IOException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -131,8 +152,12 @@ public class JacksonUtils {
 		objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 		objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
 		try {
+			if (obj instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) obj, Map.class);
+				obj = map;
+			}
 			return objectMapper.writeValueAsString(obj);
-		} catch (JsonProcessingException e) {
+		} catch (IOException e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -145,6 +170,10 @@ public class JacksonUtils {
 	 */
 	public static <T> T conversion(Object data, Class<T> type) {
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = defaultObjectMapper.readValue((InputStream) data, Map.class);
+				data = defaultObjectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -171,6 +200,10 @@ public class JacksonUtils {
 		initUniversalConfig(objectMapper);
 		objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -194,6 +227,10 @@ public class JacksonUtils {
 			DefaultDeserializationContext dc) {
 		ObjectMapper objectMapper = new ObjectMapper(jf, sp, dc);
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -216,6 +253,10 @@ public class JacksonUtils {
 	public static <T> T conversion(Object data, Class<T> type, JsonFactory jf) {
 		ObjectMapper objectMapper = new ObjectMapper(jf);
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -237,6 +278,10 @@ public class JacksonUtils {
 	 */
 	public static <T> T snameCaseConversion(Object data, Class<T> type) {
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = defaultSnameCaseObjectMapper.readValue((InputStream) data, Map.class);
+				data = defaultSnameCaseObjectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -264,6 +309,10 @@ public class JacksonUtils {
 		objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 		objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -286,6 +335,10 @@ public class JacksonUtils {
 	 */
 	public static <T> T conversion(Object data, JavaType type) {
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = defaultObjectMapper.readValue((InputStream) data, Map.class);
+				data = defaultObjectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -313,6 +366,10 @@ public class JacksonUtils {
 		initUniversalConfig(objectMapper);
 		objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -337,6 +394,10 @@ public class JacksonUtils {
 			DefaultDeserializationContext dc) {
 		ObjectMapper objectMapper = new ObjectMapper(jf, sp, dc);
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -360,6 +421,10 @@ public class JacksonUtils {
 	public static <T> T conversion(Object data, JavaType type, JsonFactory jf) {
 		ObjectMapper objectMapper = new ObjectMapper(jf);
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -382,6 +447,10 @@ public class JacksonUtils {
 	 */
 	public static <T> T snameCaseConversion(Object data, JavaType type) {
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = defaultSnameCaseObjectMapper.readValue((InputStream) data, Map.class);
+				data = defaultSnameCaseObjectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -410,6 +479,10 @@ public class JacksonUtils {
 		objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 		objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -453,6 +526,10 @@ public class JacksonUtils {
 	 */
 	public static <T> T conversion(Object data, TypeReference<?> type) {
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = defaultObjectMapper.readValue((InputStream) data, Map.class);
+				data = defaultObjectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -480,6 +557,10 @@ public class JacksonUtils {
 		initUniversalConfig(objectMapper);
 		objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -505,6 +586,10 @@ public class JacksonUtils {
 			DefaultDeserializationContext dc) {
 		ObjectMapper objectMapper = new ObjectMapper(jf, sp, dc);
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -529,6 +614,10 @@ public class JacksonUtils {
 	public static <T> T conversion(Object data, TypeReference<?> type, JsonFactory jf) {
 		ObjectMapper objectMapper = new ObjectMapper(jf);
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -552,6 +641,10 @@ public class JacksonUtils {
 	 */
 	public static <T> T snameCaseConversion(Object data, TypeReference<?> type) {
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = defaultSnameCaseObjectMapper.readValue((InputStream) data, Map.class);
+				data = defaultSnameCaseObjectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
@@ -580,6 +673,10 @@ public class JacksonUtils {
 		objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 		objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
 		try {
+			if (data instanceof InputStream) {
+				Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
+				data = objectMapper.writeValueAsString(map);
+			}
 			String stringValue = null;
 			if (data instanceof String) {
 				stringValue = (String) data;
