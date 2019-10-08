@@ -551,8 +551,8 @@ public class JacksonUtils {
             } else {
                 stringValue = defaultObjectMapper.writeValueAsString(data);
             }
-            T newData = defaultObjectMapper.readValue(stringValue, type);
-            return newData;
+            Object result = defaultObjectMapper.readValue(stringValue, type);
+            return (T) result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -582,8 +582,8 @@ public class JacksonUtils {
             } else {
                 stringValue = objectMapper.writeValueAsString(data);
             }
-            T newData = objectMapper.readValue(stringValue, type);
-            return newData;
+            Object result = objectMapper.readValue(stringValue, type);
+            return (T) result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -612,8 +612,8 @@ public class JacksonUtils {
             } else {
                 stringValue = objectMapper.writeValueAsString(data);
             }
-            T newData = objectMapper.readValue(stringValue, type);
-            return newData;
+            Object result = objectMapper.readValue(stringValue, type);
+            return (T) result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -641,8 +641,8 @@ public class JacksonUtils {
             } else {
                 stringValue = objectMapper.writeValueAsString(data);
             }
-            T newData = objectMapper.readValue(stringValue, type);
-            return newData;
+            Object result = objectMapper.readValue(stringValue, type);
+            return (T) result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -668,8 +668,8 @@ public class JacksonUtils {
             } else {
                 stringValue = defaultSnameCaseObjectMapper.writeValueAsString(data);
             }
-            T newData = defaultSnameCaseObjectMapper.readValue(stringValue, type);
-            return newData;
+            Object result = defaultSnameCaseObjectMapper.readValue(stringValue, type);
+            return (T) result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -700,8 +700,8 @@ public class JacksonUtils {
             } else {
                 stringValue = objectMapper.writeValueAsString(data);
             }
-            T newData = objectMapper.readValue(stringValue, type);
-            return newData;
+            Object result = objectMapper.readValue(stringValue, type);
+            return (T) result;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
