@@ -45,9 +45,6 @@ public class JacksonUtils {
      * @param obj 输入数据
      */
     public static String toJsonString(Object obj) {
-        if (obj instanceof String) {
-            return (String) obj;
-        }
         try {
             if (obj instanceof InputStream) {
                 Map<?, ?> map = defaultObjectMapper.readValue((InputStream) obj, Map.class);
@@ -66,9 +63,6 @@ public class JacksonUtils {
      */
     public static String toJsonString(Object obj, JsonFactory jf, DefaultSerializerProvider sp,
                                       DefaultDeserializationContext dc) {
-        if (obj instanceof String) {
-            return (String) obj;
-        }
         ObjectMapper objectMapper = new ObjectMapper(jf, sp, dc);
         objectMapper.registerModule(simpleModule);
         try {
@@ -88,9 +82,6 @@ public class JacksonUtils {
      * @param obj 输入数据
      */
     public static String toJsonString(Object obj, JsonFactory jf) {
-        if (obj instanceof String) {
-            return (String) obj;
-        }
         ObjectMapper objectMapper = new ObjectMapper(jf);
         objectMapper.registerModule(simpleModule);
         try {
@@ -111,9 +102,6 @@ public class JacksonUtils {
      * @param datePattern 时间输出格式
      */
     public static String toJsonString(Object obj, String datePattern) {
-        if (obj instanceof String) {
-            return (String) obj;
-        }
         ObjectMapper objectMapper = new ObjectMapper();
         initUniversalConfig(objectMapper);
         objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
@@ -134,9 +122,6 @@ public class JacksonUtils {
      * @param obj 输入数据
      */
     public static String toSnameCaseJsonString(Object obj) {
-        if (obj instanceof String) {
-            return (String) obj;
-        }
         try {
             if (obj instanceof InputStream) {
                 Map<?, ?> map = defaultSnameCaseObjectMapper.readValue((InputStream) obj, Map.class);
@@ -155,9 +140,6 @@ public class JacksonUtils {
      * @param datePattern 时间输出格式
      */
     public static String toSnameCaseJsonString(Object obj, String datePattern) {
-        if (obj instanceof String) {
-            return (String) obj;
-        }
         ObjectMapper objectMapper = new ObjectMapper();
         initUniversalConfig(objectMapper);
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
