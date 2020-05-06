@@ -286,7 +286,7 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据
      *
      * @param data 输入数据
-     * @param type 转换的目标类型, 用于处理泛型
+     * @param type 转换的目标类型, 用于处理泛型, 可使用{@link Class#getGenericSuperclass()}获取
      */
     public static <T> T conversion(Object data, Type type) {
         return conversion(data, getJavaType(type));
@@ -296,7 +296,7 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据
      *
      * @param data        输入数据
-     * @param type        转换的目标类型, 用于处理泛型
+     * @param type        转换的目标类型, 用于处理泛型, 可使用{@link Class#getGenericSuperclass()}获取
      * @param datePattern 时间输出格式
      */
     public static <T> T conversion(Object data, Type type, String datePattern) {
@@ -344,7 +344,7 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据, 使用下划线风格
      *
      * @param data 输入数据
-     * @param type 转换的目标类型, 用于处理泛型
+     * @param type 转换的目标类型, 用于处理泛型, 可使用{@link Class#getGenericSuperclass()}获取
      */
     public static <T> T snakeCaseConversion(Object data, Type type) {
         return snakeCaseConversion(data, getJavaType(type));
@@ -354,7 +354,7 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据, 使用下划线风格
      *
      * @param data        输入数据
-     * @param type        转换的目标类型, 用于处理泛型
+     * @param type        转换的目标类型, 用于处理泛型, 可使用{@link Class#getGenericSuperclass()}获取
      * @param datePattern 时间输出格式
      */
     public static <T> T snakeCaseConversion(Object data, Type type, String datePattern) {
