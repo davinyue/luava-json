@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <licenses>
@@ -37,7 +37,7 @@
 
     <groupId>org.linuxprobe</groupId>
     <artifactId>luava-json</artifactId>
-    <version>0.0.6.RELEASE</version>
+    <version>0.0.7.RELEASE</version>
     <packaging>jar</packaging>
     <name>luava-json</name>
     <description>luava-json</description>
@@ -50,7 +50,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
-        <jackson.version>2.10.1</jackson.version>
+        <jackson.version>2.11.0</jackson.version>
     </properties>
 
     <dependencies>
@@ -74,11 +74,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.linuxprobe</groupId>
-            <artifactId>luava-other</artifactId>
-            <version>0.0.3.RELEASE</version>
         </dependency>
     </dependencies>
     <build>

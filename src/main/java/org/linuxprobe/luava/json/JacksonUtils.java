@@ -1,42 +1,44 @@
 package org.linuxprobe.luava.json;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import org.linuxprobe.luava.json.jackson.JsonBooleanDeserializer;
-import org.linuxprobe.luava.json.jackson.JsonDateDeserializer;
+import org.linuxprobe.luava.json.jackson.factory.ObjectMapperFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 
 public class JacksonUtils {
-    private static ObjectMapper defaultObjectMapper = new ObjectMapper();
-    private static ObjectMapper defaultSnameCaseObjectMapper = new ObjectMapper();
-    private static SimpleModule simpleModule = new SimpleModule();
-
-    static {
-        simpleModule.addDeserializer(Date.class, new JsonDateDeserializer());
-        simpleModule.addDeserializer(Boolean.class, new JsonBooleanDeserializer());
-        initUniversalConfig(defaultObjectMapper);
-        initUniversalConfig(defaultSnameCaseObjectMapper);
-        defaultSnameCaseObjectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+    /**
+     * 获取泛型用于objectMapper转换的javaType
+     *
+     * @param type 类型, 可使用{@link Class#getGenericSuperclass()}获取
+     */
+    public static JavaType getJavaType(Type type) {
+        if (type instanceof ParameterizedType) {
+            Type[] actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
+            Class<?> rowClass = (Class<?>) ((ParameterizedType) type).getRawType();
+            JavaType[] javaTypes = new JavaType[actualTypeArguments.length];
+            for (int i = 0; i < actualTypeArguments.length; i++) {
+                javaTypes[i] = getJavaType(actualTypeArguments[i]);
+            }
+            return TypeFactory.defaultInstance().constructParametricType(rowClass, javaTypes);
+        } else {
+            Class<?> cla = (Class<?>) type;
+            return TypeFactory.defaultInstance().constructParametricType(cla, new JavaType[0]);
+        }
     }
 
-    private static void initUniversalConfig(ObjectMapper objectMapper) {
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.setSerializationInclusion(Include.NON_NULL);
-        objectMapper.registerModule(simpleModule);
+    private static Object inputStreamToString(Object obj) throws IOException {
+        if (obj instanceof InputStream) {
+            return StreamUtils.copyToString((InputStream) obj, StandardCharsets.UTF_8);
+        } else {
+            return obj;
+        }
     }
 
     /**
@@ -46,47 +48,8 @@ public class JacksonUtils {
      */
     public static String toJsonString(Object obj) {
         try {
-            if (obj instanceof InputStream) {
-                obj = defaultObjectMapper.readValue((InputStream) obj, Map.class);
-            }
-            return defaultObjectMapper.writeValueAsString(obj);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    /**
-     * 把数据转换为json字符串
-     *
-     * @param obj 输入数据
-     */
-    public static String toJsonString(Object obj, JsonFactory jf, DefaultSerializerProvider sp,
-                                      DefaultDeserializationContext dc) {
-        ObjectMapper objectMapper = new ObjectMapper(jf, sp, dc);
-        objectMapper.registerModule(simpleModule);
-        try {
-            if (obj instanceof InputStream) {
-                obj = objectMapper.readValue((InputStream) obj, Map.class);
-            }
-            return objectMapper.writeValueAsString(obj);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    /**
-     * 把数据转换为json字符串
-     *
-     * @param obj 输入数据
-     */
-    public static String toJsonString(Object obj, JsonFactory jf) {
-        ObjectMapper objectMapper = new ObjectMapper(jf);
-        objectMapper.registerModule(simpleModule);
-        try {
-            if (obj instanceof InputStream) {
-                obj = objectMapper.readValue((InputStream) obj, Map.class);
-            }
-            return objectMapper.writeValueAsString(obj);
+            obj = inputStreamToString(obj);
+            return ObjectMapperFactory.getDefaultObjectMapper().writeValueAsString(obj);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -99,14 +62,9 @@ public class JacksonUtils {
      * @param datePattern 时间输出格式
      */
     public static String toJsonString(Object obj, String datePattern) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        initUniversalConfig(objectMapper);
-        objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
         try {
-            if (obj instanceof InputStream) {
-                obj = objectMapper.readValue((InputStream) obj, Map.class);
-            }
-            return objectMapper.writeValueAsString(obj);
+            obj = inputStreamToString(obj);
+            return ObjectMapperFactory.getDefaultObjectMapper(datePattern).writeValueAsString(obj);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -117,12 +75,10 @@ public class JacksonUtils {
      *
      * @param obj 输入数据
      */
-    public static String toSnameCaseJsonString(Object obj) {
+    public static String toSnakeCaseJsonString(Object obj) {
         try {
-            if (obj instanceof InputStream) {
-                obj = defaultSnameCaseObjectMapper.readValue((InputStream) obj, Map.class);
-            }
-            return defaultSnameCaseObjectMapper.writeValueAsString(obj);
+            obj = inputStreamToString(obj);
+            return ObjectMapperFactory.getDefaultSnakeCaseObjectMapper().writeValueAsString(obj);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -134,40 +90,37 @@ public class JacksonUtils {
      * @param obj         输入数据
      * @param datePattern 时间输出格式
      */
-    public static String toSnameCaseJsonString(Object obj, String datePattern) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        initUniversalConfig(objectMapper);
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
+    public static String toSnakeCaseJsonString(Object obj, String datePattern) {
         try {
-            if (obj instanceof InputStream) {
-                obj = objectMapper.readValue((InputStream) obj, Map.class);
-            }
-            return objectMapper.writeValueAsString(obj);
+            obj = inputStreamToString(obj);
+            return ObjectMapperFactory.getDefaultSnakeCaseObjectMapper(datePattern).writeValueAsString(obj);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    private static String conversionBefore(Object data, ObjectMapper objectMapper) throws IOException {
+        data = inputStreamToString(data);
+        String stringValue = null;
+        if (data instanceof String) {
+            stringValue = (String) data;
+        } else {
+            stringValue = objectMapper.writeValueAsString(data);
+        }
+        return stringValue;
     }
 
     /**
      * 把一个类型的数据转换为另一个类型的数据
      *
      * @param data 输入数据
-     * @param type 转换的目标类型, 可传入com.fasterxml.jackson.databind.JavaType类型, 用于处理泛型
+     * @param type 转换的目标类型
      */
     public static <T> T conversion(Object data, Class<T> type) {
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultObjectMapper();
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = defaultObjectMapper.readValue((InputStream) data, Map.class);
-                data = defaultObjectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = defaultObjectMapper.writeValueAsString(data);
-            }
-            return defaultObjectMapper.readValue(stringValue, type);
+            String stringValue = conversionBefore(data, objectMapper);
+            return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -177,78 +130,14 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据
      *
      * @param data        输入数据
-     * @param type        转换的目标类型, 可传入com.fasterxml.jackson.databind.JavaType类型,
+     * @param type        转换的目标类型
      *                    用于处理泛型
      * @param datePattern 时间输出格式
      */
     public static <T> T conversion(Object data, Class<T> type, String datePattern) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        initUniversalConfig(objectMapper);
-        objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultObjectMapper(datePattern);
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
-            return objectMapper.readValue(stringValue, type);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    /**
-     * 把一个类型的数据转换为另一个类型的数据
-     *
-     * @param data 输入数据
-     * @param type 转换的目标类型, 可传入com.fasterxml.jackson.databind.JavaType类型, 用于处理泛型
-     */
-    public static <T> T conversion(Object data, Class<T> type, JsonFactory jf, DefaultSerializerProvider sp,
-                                   DefaultDeserializationContext dc) {
-        ObjectMapper objectMapper = new ObjectMapper(jf, sp, dc);
-        objectMapper.registerModule(simpleModule);
-        try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
-            return objectMapper.readValue(stringValue, type);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    /**
-     * 把一个类型的数据转换为另一个类型的数据
-     *
-     * @param data 输入数据
-     * @param type 转换的目标类型, 可传入com.fasterxml.jackson.databind.JavaType类型, 用于处理泛型
-     */
-    public static <T> T conversion(Object data, Class<T> type, JsonFactory jf) {
-        ObjectMapper objectMapper = new ObjectMapper(jf);
-        objectMapper.registerModule(simpleModule);
-        try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
+            String stringValue = conversionBefore(data, objectMapper);
             return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
@@ -259,21 +148,13 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据, 使用下划线风格
      *
      * @param data 输入数据
-     * @param type 转换的目标类型, 可传入com.fasterxml.jackson.databind.JavaType类型, 用于处理泛型
+     * @param type 转换的目标类型
      */
-    public static <T> T snameCaseConversion(Object data, Class<T> type) {
+    public static <T> T snakeCaseConversion(Object data, Class<T> type) {
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultSnakeCaseObjectMapper();
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = defaultSnameCaseObjectMapper.readValue((InputStream) data, Map.class);
-                data = defaultSnameCaseObjectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = defaultSnameCaseObjectMapper.writeValueAsString(data);
-            }
-            return defaultSnameCaseObjectMapper.readValue(stringValue, type);
+            String stringValue = conversionBefore(data, objectMapper);
+            return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -283,26 +164,14 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据, 使用下划线风格
      *
      * @param data        输入数据
-     * @param type        转换的目标类型, 可传入com.fasterxml.jackson.databind.JavaType类型,
+     * @param type        转换的目标类型
      *                    用于处理泛型
      * @param datePattern 时间输出格式
      */
-    public static <T> T snameCaseConversion(Object data, Class<T> type, String datePattern) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        initUniversalConfig(objectMapper);
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
+    public static <T> T snakeCaseConversion(Object data, Class<T> type, String datePattern) {
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultSnakeCaseObjectMapper(datePattern);
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
+            String stringValue = conversionBefore(data, objectMapper);
             return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
@@ -313,22 +182,13 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据
      *
      * @param data 输入数据
-     * @param type 转换的目标类型, 可调用org.linuxprobe.luava.json.JacksonUtils.getJavaType获取,
-     *             用于处理泛型
+     * @param type 转换的目标类型,用于处理泛型
      */
     public static <T> T conversion(Object data, JavaType type) {
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultObjectMapper();
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = defaultObjectMapper.readValue((InputStream) data, Map.class);
-                data = defaultObjectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = defaultObjectMapper.writeValueAsString(data);
-            }
-            return defaultObjectMapper.readValue(stringValue, type);
+            String stringValue = conversionBefore(data, objectMapper);
+            return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -338,81 +198,13 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据
      *
      * @param data        输入数据
-     * @param type        转换的目标类型,
-     *                    可调用org.linuxprobe.luava.json.JacksonUtils.getJavaType获取,
-     *                    用于处理泛型
+     * @param type        转换的目标类型,用于处理泛型
      * @param datePattern 时间输出格式
      */
     public static <T> T conversion(Object data, JavaType type, String datePattern) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        initUniversalConfig(objectMapper);
-        objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultObjectMapper(datePattern);
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
-            return objectMapper.readValue(stringValue, type);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    /**
-     * 把一个类型的数据转换为另一个类型的数据
-     *
-     * @param data 输入数据
-     * @param type 转换的目标类型, 可调用org.linuxprobe.luava.json.JacksonUtils.getJavaType获取,
-     *             用于处理泛型
-     */
-    public static <T> T conversion(Object data, JavaType type, JsonFactory jf, DefaultSerializerProvider sp,
-                                   DefaultDeserializationContext dc) {
-        ObjectMapper objectMapper = new ObjectMapper(jf, sp, dc);
-        objectMapper.registerModule(simpleModule);
-        try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
-            return objectMapper.readValue(stringValue, type);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    /**
-     * 把一个类型的数据转换为另一个类型的数据
-     *
-     * @param data 输入数据
-     * @param type 转换的目标类型, 可调用org.linuxprobe.luava.json.JacksonUtils.getJavaType获取,
-     *             用于处理泛型
-     */
-    public static <T> T conversion(Object data, JavaType type, JsonFactory jf) {
-        ObjectMapper objectMapper = new ObjectMapper(jf);
-        objectMapper.registerModule(simpleModule);
-        try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
+            String stringValue = conversionBefore(data, objectMapper);
             return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
@@ -423,22 +215,13 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据, 使用下划线风格
      *
      * @param data 输入数据
-     * @param type 转换的目标类型, 可调用org.linuxprobe.luava.json.JacksonUtils.getJavaType获取,
-     *             用于处理泛型
+     * @param type 转换的目标类型, 用于处理泛型
      */
-    public static <T> T snameCaseConversion(Object data, JavaType type) {
+    public static <T> T snakeCaseConversion(Object data, JavaType type) {
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultSnakeCaseObjectMapper();
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = defaultSnameCaseObjectMapper.readValue((InputStream) data, Map.class);
-                data = defaultSnameCaseObjectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = defaultSnameCaseObjectMapper.writeValueAsString(data);
-            }
-            return defaultSnameCaseObjectMapper.readValue(stringValue, type);
+            String stringValue = conversionBefore(data, objectMapper);
+            return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -448,52 +231,19 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据, 使用下划线风格
      *
      * @param data        输入数据
-     * @param type        转换的目标类型,
-     *                    可调用org.linuxprobe.luava.json.JacksonUtils.getJavaType获取,
-     *                    用于处理泛型
+     * @param type        转换的目标类型,用于处理泛型
      * @param datePattern 时间输出格式
      */
-    public static <T> T snameCaseConversion(Object data, JavaType type, String datePattern) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        initUniversalConfig(objectMapper);
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
+    public static <T> T snakeCaseConversion(Object data, JavaType type, String datePattern) {
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultSnakeCaseObjectMapper(datePattern);
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
+            String stringValue = conversionBefore(data, objectMapper);
             return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
     }
 
-    /**
-     * 获取泛型用于objectMapper转换的javaType
-     *
-     * @param parametrized     类型
-     * @param parameterClasses 泛型类型
-     */
-    public static JavaType getJavaType(Class<?> parametrized, Class<?>... parameterClasses) {
-        return TypeFactory.defaultInstance().constructParametricType(parametrized, parameterClasses);
-    }
-
-    /**
-     * 获取泛型用于objectMapper转换的javaType
-     *
-     * @param rawType        类型
-     * @param parameterTypes JavaType构造的类型
-     */
-    public static JavaType getJavaType(Class<?> rawType, JavaType... parameterTypes) {
-        return TypeFactory.defaultInstance().constructParametricType(rawType, parameterTypes);
-    }
 
     /**
      * 把一个类型的数据转换为另一个类型的数据
@@ -503,20 +253,11 @@ public class JacksonUtils {
      *             TypeReference&lt;List&lt;Integer&gt;&gt;() { },
      *             将返回List&lt;Integer&gt
      */
-    public static <T> T conversion(Object data, TypeReference<?> type) {
+    public static <T> T conversion(Object data, TypeReference<T> type) {
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultObjectMapper();
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = defaultObjectMapper.readValue((InputStream) data, Map.class);
-                data = defaultObjectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = defaultObjectMapper.writeValueAsString(data);
-            }
-            Object result = defaultObjectMapper.readValue(stringValue, type);
-            return (T) result;
+            String stringValue = conversionBefore(data, objectMapper);
+            return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -531,23 +272,11 @@ public class JacksonUtils {
      *                    将返回List&lt;Integer&gt
      * @param datePattern 时间输出格式
      */
-    public static <T> T conversion(Object data, TypeReference<?> type, String datePattern) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        initUniversalConfig(objectMapper);
-        objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
+    public static <T> T conversion(Object data, TypeReference<T> type, String datePattern) {
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultObjectMapper(datePattern);
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
-            Object result = objectMapper.readValue(stringValue, type);
-            return (T) result;
+            String stringValue = conversionBefore(data, objectMapper);
+            return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -557,59 +286,21 @@ public class JacksonUtils {
      * 把一个类型的数据转换为另一个类型的数据
      *
      * @param data 输入数据
-     * @param type 转换的目标类型, 用于处理泛型, eg: new
-     *             TypeReference&lt;List&lt;Integer&gt;&gt;() { },
-     *             将返回List&lt;Integer&gt
+     * @param type 转换的目标类型, 用于处理泛型
      */
-    public static <T> T conversion(Object data, TypeReference<?> type, JsonFactory jf, DefaultSerializerProvider sp,
-                                   DefaultDeserializationContext dc) {
-        ObjectMapper objectMapper = new ObjectMapper(jf, sp, dc);
-        objectMapper.registerModule(simpleModule);
-        try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
-            Object result = objectMapper.readValue(stringValue, type);
-            return (T) result;
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
+    public static <T> T conversion(Object data, Type type) {
+        return conversion(data, getJavaType(type));
     }
 
     /**
      * 把一个类型的数据转换为另一个类型的数据
      *
-     * @param data 输入数据
-     * @param type 转换的目标类型, 用于处理泛型, eg: new
-     *             TypeReference&lt;List&lt;Integer&gt;&gt;() { },
-     *             将返回List&lt;Integer&gt
+     * @param data        输入数据
+     * @param type        转换的目标类型, 用于处理泛型
+     * @param datePattern 时间输出格式
      */
-    public static <T> T conversion(Object data, TypeReference<?> type, JsonFactory jf) {
-        ObjectMapper objectMapper = new ObjectMapper(jf);
-        objectMapper.registerModule(simpleModule);
-        try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
-            Object result = objectMapper.readValue(stringValue, type);
-            return (T) result;
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
+    public static <T> T conversion(Object data, Type type, String datePattern) {
+        return conversion(data, getJavaType(type), datePattern);
     }
 
     /**
@@ -620,20 +311,11 @@ public class JacksonUtils {
      *             TypeReference&lt;List&lt;Integer&gt;&gt;() { },
      *             将返回List&lt;Integer&gt
      */
-    public static <T> T snameCaseConversion(Object data, TypeReference<?> type) {
+    public static <T> T snakeCaseConversion(Object data, TypeReference<T> type) {
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultSnakeCaseObjectMapper();
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = defaultSnameCaseObjectMapper.readValue((InputStream) data, Map.class);
-                data = defaultSnameCaseObjectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = defaultSnameCaseObjectMapper.writeValueAsString(data);
-            }
-            Object result = defaultSnameCaseObjectMapper.readValue(stringValue, type);
-            return (T) result;
+            String stringValue = conversionBefore(data, objectMapper);
+            return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
@@ -648,26 +330,34 @@ public class JacksonUtils {
      *                    将返回List&lt;Integer&gt
      * @param datePattern 时间输出格式
      */
-    public static <T> T snameCaseConversion(Object data, TypeReference<?> type, String datePattern) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        initUniversalConfig(objectMapper);
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
+    public static <T> T snakeCaseConversion(Object data, TypeReference<T> type, String datePattern) {
+        ObjectMapper objectMapper = ObjectMapperFactory.getDefaultSnakeCaseObjectMapper(datePattern);
         try {
-            if (data instanceof InputStream) {
-                Map<?, ?> map = objectMapper.readValue((InputStream) data, Map.class);
-                data = objectMapper.writeValueAsString(map);
-            }
-            String stringValue = null;
-            if (data instanceof String) {
-                stringValue = (String) data;
-            } else {
-                stringValue = objectMapper.writeValueAsString(data);
-            }
-            Object result = objectMapper.readValue(stringValue, type);
-            return (T) result;
+            String stringValue = conversionBefore(data, objectMapper);
+            return objectMapper.readValue(stringValue, type);
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    /**
+     * 把一个类型的数据转换为另一个类型的数据, 使用下划线风格
+     *
+     * @param data 输入数据
+     * @param type 转换的目标类型, 用于处理泛型
+     */
+    public static <T> T snakeCaseConversion(Object data, Type type) {
+        return snakeCaseConversion(data, getJavaType(type));
+    }
+
+    /**
+     * 把一个类型的数据转换为另一个类型的数据, 使用下划线风格
+     *
+     * @param data        输入数据
+     * @param type        转换的目标类型, 用于处理泛型
+     * @param datePattern 时间输出格式
+     */
+    public static <T> T snakeCaseConversion(Object data, Type type, String datePattern) {
+        return snakeCaseConversion(data, getJavaType(type), datePattern);
     }
 }
