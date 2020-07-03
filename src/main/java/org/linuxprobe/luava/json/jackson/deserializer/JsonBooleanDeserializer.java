@@ -11,7 +11,7 @@ import java.io.IOException;
  * 自定义字符串反序列号成boolean
  */
 public class JsonBooleanDeserializer extends JsonDeserializer<Boolean> {
-    private static JsonBooleanDeserializer instance = new JsonBooleanDeserializer();
+    private static final JsonBooleanDeserializer instance = new JsonBooleanDeserializer();
 
     private JsonBooleanDeserializer() {
     }

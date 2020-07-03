@@ -17,7 +17,7 @@ public class ObjectMapperFactory {
     private static final String defaultDatePattern = "yyyy-MM-dd HH:mm:ss";
     private static final String defaultSnakeKey = "defaultSnakeCase:";
     private static final String defaultKey = "default:";
-    private static volatile ConcurrentMap<String, ObjectMapper> keyMapObjectMapper = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, ObjectMapper> keyMapObjectMapper = new ConcurrentHashMap<>();
 
     private static void initUniversalConfig(ObjectMapper objectMapper) {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

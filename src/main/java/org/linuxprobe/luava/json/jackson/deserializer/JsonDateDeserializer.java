@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class JsonDateDeserializer extends JsonDeserializer<Date> {
-    private static JsonDateDeserializer instance = new JsonDateDeserializer();
+    private static final JsonDateDeserializer instance = new JsonDateDeserializer();
 
     private JsonDateDeserializer() {
     }
