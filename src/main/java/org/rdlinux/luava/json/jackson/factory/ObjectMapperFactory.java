@@ -1,14 +1,18 @@
-package org.linuxprobe.luava.json.jackson.factory;
+package org.rdlinux.luava.json.jackson.factory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.linuxprobe.luava.json.jackson.deserializer.JsonBooleanDeserializer;
-import org.linuxprobe.luava.json.jackson.deserializer.JsonDateDeserializer;
+import org.rdlinux.luava.json.jackson.deserializer.JsonBooleanDeserializer;
+import org.rdlinux.luava.json.jackson.deserializer.JsonDateDeserializer;
+import org.rdlinux.luava.json.jackson.deserializer.LocalDateTimeDeserializer;
+import org.rdlinux.luava.json.jackson.serializer.LocalDateTimeSerializer;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -20,11 +24,14 @@ public class ObjectMapperFactory {
     private static final ConcurrentMap<String, ObjectMapper> keyMapObjectMapper = new ConcurrentHashMap<>();
 
     private static void initUniversalConfig(ObjectMapper objectMapper) {
+        objectMapper.findAndRegisterModules();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addDeserializer(Date.class, JsonDateDeserializer.getInstance());
         simpleModule.addDeserializer(Boolean.class, JsonBooleanDeserializer.getInstance());
+        simpleModule.addSerializer(LocalDateTime.class, LocalDateTimeSerializer.getInstance());
+        simpleModule.addDeserializer(LocalDateTime.class, LocalDateTimeDeserializer.getInstance());
         objectMapper.registerModule(simpleModule);
     }
 
@@ -33,15 +40,16 @@ public class ObjectMapperFactory {
     }
 
     public static ObjectMapper getDefaultObjectMapper(String datePattern) {
-        ObjectMapper objectMapper = keyMapObjectMapper.get(defaultKey + datePattern);
+        String key = defaultKey + datePattern;
+        ObjectMapper objectMapper = keyMapObjectMapper.get(key);
         if (objectMapper == null) {
-            synchronized ("loadDefaultObjectMapper:" + datePattern) {
-                objectMapper = keyMapObjectMapper.get(defaultKey + datePattern);
+            synchronized (ObjectMapperFactory.class) {
+                objectMapper = keyMapObjectMapper.get(key);
                 if (objectMapper == null) {
                     objectMapper = new ObjectMapper();
                     initUniversalConfig(objectMapper);
                     objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
-                    keyMapObjectMapper.put(defaultKey + datePattern, objectMapper);
+                    keyMapObjectMapper.put(key, objectMapper);
                 }
             }
         }
@@ -53,16 +61,21 @@ public class ObjectMapperFactory {
     }
 
     public static ObjectMapper getDefaultSnakeCaseObjectMapper(String datePattern) {
-        ObjectMapper objectMapper = keyMapObjectMapper.get(defaultSnakeKey + datePattern);
+        String key = defaultSnakeKey + datePattern;
+        ObjectMapper objectMapper = keyMapObjectMapper.get(key);
         if (objectMapper == null) {
-            synchronized ("loadDefaultSnakeObjectMapper:" + datePattern) {
-                objectMapper = keyMapObjectMapper.get(defaultSnakeKey + datePattern);
+            synchronized (ObjectMapperFactory.class) {
+                objectMapper = keyMapObjectMapper.get(key);
                 if (objectMapper == null) {
                     objectMapper = new ObjectMapper();
                     initUniversalConfig(objectMapper);
-                    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+                    try {
+                        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+                    } catch (Exception e) {
+                        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+                    }
                     objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
-                    keyMapObjectMapper.put(defaultSnakeKey + datePattern, objectMapper);
+                    keyMapObjectMapper.put(key, objectMapper);
                 }
             }
         }

@@ -1,4 +1,4 @@
-package org.linuxprobe.luava.json.jackson.deserializer;
+package org.rdlinux.luava.json.jackson.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

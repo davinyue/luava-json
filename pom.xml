@@ -11,37 +11,35 @@
     </licenses>
     <developers>
         <developer>
-            <name>linuxprobe.org</name>
-            <email>linuxprobe.org@gmail.com</email>
+            <name>rdlinux.org</name>
+            <email>davinyue@gmail.com</email>
         </developer>
     </developers>
     <scm>
         <tag>master</tag>
-        <connection>https://github.com/linuxprobe-org/luava-json.git</connection>
-        <developerConnection>https://github.com/linuxprobe-org</developerConnection>
-        <url>https://github.com/linuxprobe-org/luava-json.git</url>
+        <connection>https://github.com/davinyue/luava-json.git</connection>
+        <developerConnection>https://github.com/davinyue</developerConnection>
+        <url>https://github.com/davinyue/luava-json.git</url>
     </scm>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>OSS Snapshots Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
-            <id>releases</id>
-            <name>OSS Staging Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+            <id>oss-release</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
+        <snapshotRepository>
+            <id>oss-snapshot</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
     </distributionManagement>
 
-    <groupId>org.linuxprobe</groupId>
+    <groupId>org.rdlinux</groupId>
     <artifactId>luava-json</artifactId>
-    <version>0.0.8.RELEASE</version>
+    <version>0.0.9.RELEASE</version>
     <packaging>jar</packaging>
     <name>luava-json</name>
     <description>luava-json</description>
-    <url>https://github.com/linuxprobe-org/luava-json.git</url>
+    <url>https://github.com/davinyue/luava-json.git</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -50,14 +48,14 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
-        <jackson.version>2.11.2</jackson.version>
+        <jackson.version>2.13.1</jackson.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -74,6 +72,12 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>
@@ -115,7 +119,7 @@
                 <version>2.9</version>
                 <configuration>
                     <aggregate>true</aggregate>
-                    <defaultAuthor>LarryYu</defaultAuthor>
+                    <defaultAuthor>DavinYue</defaultAuthor>
                     <defaultVersion>0.0.1.RELEASE</defaultVersion>
                 </configuration>
                 <executions>

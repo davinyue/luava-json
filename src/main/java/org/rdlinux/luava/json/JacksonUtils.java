@@ -1,10 +1,10 @@
-package org.linuxprobe.luava.json;
+package org.rdlinux.luava.json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import org.linuxprobe.luava.json.jackson.factory.ObjectMapperFactory;
+import org.rdlinux.luava.json.jackson.factory.ObjectMapperFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,7 +101,7 @@ public class JacksonUtils {
 
     private static String conversionBefore(Object data, ObjectMapper objectMapper) throws IOException {
         data = inputStreamToString(data);
-        String stringValue = null;
+        String stringValue;
         if (data instanceof String) {
             stringValue = (String) data;
         } else {

@@ -1,4 +1,4 @@
-package org.linuxprobe.luava.json;
+package org.rdlinux.luava.json;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,8 +11,6 @@ public abstract class StreamUtils {
      * The default buffer size used why copying bytes.
      */
     public static final int BUFFER_SIZE = 4096;
-
-    private static final byte[] EMPTY_CONTENT = new byte[0];
 
 
     /**
