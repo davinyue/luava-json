@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.rdlinux.luava.json.jackson.deserializer.JsonBooleanDeserializer;
 import org.rdlinux.luava.json.jackson.deserializer.JsonDateDeserializer;
@@ -69,11 +68,7 @@ public class ObjectMapperFactory {
                 if (objectMapper == null) {
                     objectMapper = new ObjectMapper();
                     initUniversalConfig(objectMapper);
-                    try {
-                        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-                    } catch (Exception e) {
-                        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-                    }
+                    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
                     objectMapper.setDateFormat(new SimpleDateFormat(datePattern));
                     keyMapObjectMapper.put(key, objectMapper);
                 }

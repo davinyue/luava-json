@@ -35,7 +35,7 @@
 
     <groupId>org.rdlinux</groupId>
     <artifactId>luava-json</artifactId>
-    <version>0.0.9.RELEASE</version>
+    <version>0.1.0</version>
     <packaging>jar</packaging>
     <name>luava-json</name>
     <description>luava-json</description>
@@ -48,7 +48,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.compilerVersion>1.8</maven.compiler.compilerVersion>
-        <jackson.version>2.13.1</jackson.version>
+        <jackson.version>2.15.2</jackson.version>
     </properties>
 
     <dependencies>
